@@ -5,15 +5,23 @@ extension InlineNode {
         baseURL: URL?,
         textStyles: InlineTextStyles,
         softBreakMode: SoftBreak.Mode,
-        attributes: AttributeContainer
+        attributes: AttributeContainer,
+        highlightConfiguration: HighlightConfiguration = .none
     ) -> AttributedString {
         var renderer = AttributedStringInlineRenderer(
             baseURL: baseURL,
             textStyles: textStyles,
             softBreakMode: softBreakMode,
-            attributes: attributes
+            attributes: attributes,
+            highlightConfiguration: highlightConfiguration
         )
         renderer.render(self)
+
+        // Apply highlighting after rendering
+        if let phrases = highlightConfiguration.phrases, !phrases.isEmpty {
+            renderer.applyHighlighting(phrases: phrases)
+        }
+
         return renderer.result.resolvingFonts()
     }
 }
@@ -24,6 +32,7 @@ private struct AttributedStringInlineRenderer {
     private let baseURL: URL?
     private let textStyles: InlineTextStyles
     private let softBreakMode: SoftBreak.Mode
+    private let highlightConfiguration: HighlightConfiguration
     private var attributes: AttributeContainer
     private var shouldSkipNextWhitespace = false
 
@@ -31,12 +40,14 @@ private struct AttributedStringInlineRenderer {
         baseURL: URL?,
         textStyles: InlineTextStyles,
         softBreakMode: SoftBreak.Mode,
-        attributes: AttributeContainer
+        attributes: AttributeContainer,
+        highlightConfiguration: HighlightConfiguration
     ) {
         self.baseURL = baseURL
         self.textStyles = textStyles
         self.softBreakMode = softBreakMode
         self.attributes = attributes
+        self.highlightConfiguration = highlightConfiguration
     }
 
     mutating func render(_ inline: InlineNode) {
@@ -153,6 +164,52 @@ private struct AttributedStringInlineRenderer {
 
     private mutating func renderImage(source _: String, children _: [InlineNode]) {
         // AttributedString does not support images
+    }
+
+    fileprivate mutating func applyHighlighting(phrases: Set<String>) {
+        let searchString = String(result.characters)
+
+        for phrase in phrases {
+            let searchPhrase = highlightConfiguration.caseSensitive ? phrase : phrase.lowercased()
+            let searchIn = highlightConfiguration.caseSensitive ? searchString : searchString.lowercased()
+
+            // Find all occurrences of the phrase
+            var searchRange = searchIn.startIndex ..< searchIn.endIndex
+            while let range = searchIn.range(of: searchPhrase, options: [], range: searchRange) {
+                // For single words, check word boundaries; for phrases, highlight as-is
+                let shouldHighlight: Bool
+                if !phrase.contains(" ") {
+                    // Single word - check boundaries
+                    let isWordStart = range.lowerBound == searchIn.startIndex ||
+                        !searchIn[searchIn.index(before: range.lowerBound)].isLetter
+                    let isWordEnd = range.upperBound == searchIn.endIndex ||
+                        !searchIn[range.upperBound].isLetter
+                    shouldHighlight = isWordStart && isWordEnd
+                } else {
+                    // Phrase - highlight without boundary checking
+                    shouldHighlight = true
+                }
+
+                if shouldHighlight {
+                    // Convert String.Index to AttributedString.Index
+                    let startOffset = searchIn.distance(from: searchIn.startIndex, to: range.lowerBound)
+                    let endOffset = searchIn.distance(from: searchIn.startIndex, to: range.upperBound)
+
+                    let attrStringStart = result.index(result.startIndex, offsetByCharacters: startOffset)
+                    let attrStringEnd = result.index(result.startIndex, offsetByCharacters: endOffset)
+                    let attrRange = attrStringStart ..< attrStringEnd
+
+                    // Apply highlight colors
+                    result[attrRange].backgroundColor = highlightConfiguration.backgroundColor
+                    if let foregroundColor = highlightConfiguration.foregroundColor {
+                        result[attrRange].foregroundColor = foregroundColor
+                    }
+                }
+
+                // Move search range forward
+                searchRange = range.upperBound ..< searchIn.endIndex
+            }
+        }
     }
 }
 

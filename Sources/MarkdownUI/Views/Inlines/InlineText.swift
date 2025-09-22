@@ -6,6 +6,7 @@ struct InlineText: View {
     @Environment(\.imageBaseURL) private var imageBaseURL
     @Environment(\.softBreakMode) private var softBreakMode
     @Environment(\.theme) private var theme
+    @Environment(\.highlightConfiguration) private var highlightConfiguration
 
     @State private var inlineImages: [String: Image] = [:]
 
@@ -28,7 +29,8 @@ struct InlineText: View {
                 ),
                 images: self.inlineImages,
                 softBreakMode: self.softBreakMode,
-                attributes: attributes
+                attributes: attributes,
+                highlightConfiguration: self.highlightConfiguration
             )
         }
         .task(id: inlines) {
