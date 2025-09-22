@@ -7,7 +7,9 @@ extension Array where Element == BlockNode {
         let blocks = UnsafeNode.parseMarkdown(markdown) { document in
             document.children.compactMap(BlockNode.init(unsafeNode:))
         }
-        self.init(blocks ?? .init())
+        // Process mark tags after parsing
+        let processedBlocks = (blocks ?? []).processMarkTags()
+        self.init(processedBlocks)
     }
 
     func renderMarkdown() -> String {
@@ -407,6 +409,12 @@ private extension UnsafeNode {
             else {
                 return nil
             }
+            children.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
+            return node
+        case let .highlight(children):
+            // Convert highlight to emphasis for markdown rendering compatibility
+            // (since highlight isn't a standard markdown element)
+            guard let node = cmark_node_new(CMARK_NODE_EMPH) else { return nil }
             children.compactMap(UnsafeNode.make).forEach { cmark_node_append_child(node, $0) }
             return node
         case let .link(destination, children):

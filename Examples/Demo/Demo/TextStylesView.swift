@@ -16,6 +16,10 @@ struct TextStylesView: View {
     ```
     ~~This was mistaken text~~
     ```
+    <mark>This text is highlighted</mark>
+    ```
+    <mark>This text is highlighted</mark>
+    ```
     **This text is _extremely_ important**
     ```
     **This text is _extremely_ important**
@@ -23,6 +27,10 @@ struct TextStylesView: View {
     ***All this text is important***
     ```
     ***All this text is important***
+    ```
+    You can <mark>**combine highlight with bold**</mark> and <mark>*italic*</mark>
+    ```
+    You can <mark>**combine highlight with bold**</mark> and <mark>*italic*</mark>
     ```
     MarkdownUI is fully compliant with the [CommonMark Spec](https://spec.commonmark.org/current/).
     ```
@@ -46,7 +54,7 @@ struct TextStylesView: View {
             }
             .markdownTextStyle(\.code) {
                 FontFamilyVariant(.monospaced)
-                BackgroundColor(.yellow.opacity(0.5))
+                BackgroundColor(.purple.opacity(0.2))
             }
             .markdownTextStyle(\.emphasis) {
                 FontStyle(.italic)
@@ -57,6 +65,10 @@ struct TextStylesView: View {
             }
             .markdownTextStyle(\.strikethrough) {
                 StrikethroughStyle(.init(pattern: .solid, color: .red))
+            }
+            .markdownTextStyle(\.highlight) {
+                BackgroundColor(.cyan.opacity(0.3))
+                ForegroundColor(.blue)
             }
             .markdownTextStyle(\.link) {
                 ForegroundColor(.mint)

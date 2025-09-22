@@ -28,6 +28,9 @@ public extension Theme {
         .strong {
             FontWeight(.semibold)
         }
+        .highlight {
+            BackgroundColor(.yellow.opacity(0.4))
+        }
         .link {
             ForegroundColor(.link)
         }

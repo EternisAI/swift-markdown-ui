@@ -18,6 +18,9 @@ public extension Theme {
         .text {
             ForegroundColor(.text)
         }
+        .highlight {
+            BackgroundColor(.yellow.opacity(0.35))
+        }
         .link {
             ForegroundColor(.link)
         }

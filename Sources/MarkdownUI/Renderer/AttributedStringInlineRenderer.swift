@@ -57,6 +57,8 @@ private struct AttributedStringInlineRenderer {
             renderStrong(children: children)
         case let .strikethrough(children):
             renderStrikethrough(children: children)
+        case let .highlight(children):
+            renderHighlight(children: children)
         case let .link(destination, children):
             renderLink(destination: destination, children: children)
         case let .image(source, children):
@@ -131,6 +133,17 @@ private struct AttributedStringInlineRenderer {
     private mutating func renderStrikethrough(children: [InlineNode]) {
         let savedAttributes = attributes
         attributes = textStyles.strikethrough.mergingAttributes(attributes)
+
+        for child in children {
+            render(child)
+        }
+
+        attributes = savedAttributes
+    }
+
+    private mutating func renderHighlight(children: [InlineNode]) {
+        let savedAttributes = attributes
+        attributes = textStyles.highlight.mergingAttributes(attributes)
 
         for child in children {
             render(child)

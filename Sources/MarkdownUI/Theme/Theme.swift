@@ -115,6 +115,9 @@ public struct Theme: Sendable {
     /// The strikethrough style.
     public var strikethrough: TextStyle = StrikethroughStyle(.single)
 
+    /// The highlight style.
+    public var highlight: TextStyle = BackgroundColor(.yellow.opacity(0.3))
+
     /// The link style.
     public var link: TextStyle = EmptyTextStyle()
 
@@ -237,6 +240,14 @@ public extension Theme {
     func strikethrough<S: TextStyle>(@TextStyleBuilder strikethrough: () -> S) -> Theme {
         var theme = self
         theme.strikethrough = strikethrough()
+        return theme
+    }
+
+    /// Adds a highlight style to the theme.
+    /// - Parameter highlight: A text style builder that returns the highlight style.
+    func highlight<S: TextStyle>(@TextStyleBuilder highlight: () -> S) -> Theme {
+        var theme = self
+        theme.highlight = highlight()
         return theme
     }
 
