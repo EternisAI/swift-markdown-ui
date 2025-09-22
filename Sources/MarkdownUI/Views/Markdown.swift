@@ -241,14 +241,16 @@ public extension Markdown {
     /// Creates a Markdown view from a Markdown-formatted string with specific words highlighted.
     /// - Parameters:
     ///   - markdown: The string that contains the Markdown formatting.
-    ///   - highlightingWords: Words to wrap with `<mark>` tags for highlighting.
+    ///   - highlightingWords: Words to highlight in the content using the AST-based highlighting.
     ///   - baseURL: The base URL to use when resolving Markdown URLs. If this value is `nil`, the initializer will consider all
     ///              URLs absolute. The default is `nil`.
     ///   - imageBaseURL: The base URL to use when resolving Markdown image URLs. If this value is `nil`, the initializer will
     ///                   determine image URLs using the `baseURL` parameter. The default is `nil`.
     init(_ markdown: String, highlightingWords: [String], baseURL: URL? = nil, imageBaseURL: URL? = nil) {
-        let processedMarkdown = Self.addHighlightTags(to: markdown, words: highlightingWords)
-        self.init(MarkdownContent(processedMarkdown), baseURL: baseURL, imageBaseURL: imageBaseURL)
+        // Parse the markdown first, then apply highlighting to nodes
+        let content = MarkdownContent(markdown)
+        let highlightedContent = content.highlightingWords(highlightingWords)
+        self.init(highlightedContent, baseURL: baseURL, imageBaseURL: imageBaseURL)
     }
 
     /// Highlights specific words in the Markdown content.
@@ -256,12 +258,11 @@ public extension Markdown {
     func highlightingWords(_ words: [String]) -> Markdown {
         guard !words.isEmpty else { return self }
 
-        // Get the original markdown string
-        let originalMarkdown = content.renderMarkdown()
-        let processedMarkdown = Self.addHighlightTags(to: originalMarkdown, words: words)
+        // Process the already-parsed nodes to add highlights
+        let highlightedContent = content.highlightingWords(words)
 
         return Markdown(
-            MarkdownContent(processedMarkdown),
+            highlightedContent,
             baseURL: baseURL,
             imageBaseURL: imageBaseURL
         )
@@ -310,28 +311,6 @@ public extension Markdown {
         @MarkdownContentBuilder content: () -> MarkdownContent
     ) {
         self.init(content(), baseURL: baseURL, imageBaseURL: imageBaseURL)
-    }
-}
-
-private extension Markdown {
-    static func addHighlightTags(to markdown: String, words: [String]) -> String {
-        guard !words.isEmpty else { return markdown }
-
-        var result = markdown
-        let sortedWords = words.sorted { $0.count > $1.count } // Process longer words first
-
-        for word in sortedWords {
-            let escapedWord = NSRegularExpression.escapedPattern(for: word)
-            let pattern = "\\b(\(escapedWord))\\b"
-
-            result = result.replacingOccurrences(
-                of: pattern,
-                with: "<mark>$1</mark>",
-                options: [.regularExpression, .caseInsensitive]
-            )
-        }
-
-        return result
     }
 }
 

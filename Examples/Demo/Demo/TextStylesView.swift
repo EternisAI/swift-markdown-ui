@@ -78,12 +78,18 @@ struct TextStylesView: View {
             Section("Highlighting Words API") {
                 Markdown(
                     """
+                    ## Highlight specific words
                     You can highlight specific words using the new API.
                     The words 'specific', 'highlight', and 'API' are highlighted in this text.
                     It works with **bold specific text** and *italic API mentions* too!
+                    `API key: API_a123`
+                    ```swift
+                    This is specific API key API_123
+                    ```
                     """,
                     highlightingWords: ["specific", "highlight", "API"]
                 )
+                .markdownTheme(.gitHub)
 
             }
         }

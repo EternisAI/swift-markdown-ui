@@ -97,6 +97,13 @@ public struct MarkdownContent: Equatable, MarkdownContentProtocol {
         self.init(blocks: content().blocks)
     }
 
+    /// Creates a new MarkdownContent with highlighted words
+    func highlightingWords(_ words: [String]) -> MarkdownContent {
+        guard !words.isEmpty else { return self }
+
+        return MarkdownContent(blocks: blocks.highlightingWords(words))
+    }
+
     /// Renders this Markdown content value as a Markdown-formatted text.
     public func renderMarkdown() -> String {
         let result = blocks.renderMarkdown()
