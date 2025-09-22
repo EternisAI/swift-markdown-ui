@@ -74,6 +74,18 @@ struct TextStylesView: View {
                 ForegroundColor(.mint)
                 UnderlineStyle(.init(pattern: .dot))
             }
+
+            Section("Highlighting Words API") {
+                Markdown(
+                    """
+                    You can highlight specific words using the new API.
+                    The words 'specific', 'highlight', and 'API' are highlighted in this text.
+                    It works with **bold specific text** and *italic API mentions* too!
+                    """,
+                    highlightingWords: ["specific", "highlight", "API"]
+                )
+
+            }
         }
     }
 }
